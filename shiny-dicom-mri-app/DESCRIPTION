@@ -1,0 +1,18 @@
+Package: shiny-dicom-mri-app
+Type: Package
+Title: Shiny App for DICOM MRI File Upload and Age Input
+Version: 0.1.0
+Author: Your Name
+Maintainer: Your Name <your.email@example.com>
+Description: A Shiny application that allows users to upload DICOM MRI files and input their chronological age for preprocessing in machine learning models.
+License: MIT
+Imports:
+    shiny,
+    shinyFiles,
+    oro.dicom
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown
+Encoding: UTF-8
+LazyData: true
