@@ -1,0 +1,5 @@
+Your process has completed.
+
+Job: {{ job_name }}
+Status: {{ status }}
+{{ extra or "" }}

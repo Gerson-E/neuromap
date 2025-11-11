@@ -1,5 +1,0 @@
-Your MRI has been processed.
-
-Job: {{ job_name }}
-Status: {{ status }}
-{{ extra or "" }}
