@@ -1,4 +1,0 @@
-shiny
-pydicom
-numpy
-pandas
