@@ -79,7 +79,7 @@ def server(input, output, session):
             status = run_long_process(dicom_path, age)
             status_val.set(f"Processing complete: {status}")
 
-            subject = f"[Neuromap] Brain MRI Analysis finished ({status})"
+            subject = f"[NeuroChron] Brain MRI Analysis finished ({status})"
             context = {
                 "job_name": "Brain MRI Analysis",
                 "status": status,
