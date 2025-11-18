@@ -168,7 +168,21 @@ input::placeholder, textarea::placeholder { color: rgba(230,247,255,0.35); }
     # Hero header — logo + title
     ui.tags.div(
         ui.tags.div(
-            ui.tags.img(src="www/logo.svg", class_="logo", alt="NeuroChron logo", onerror="this.style.display='none'"),
+                        # Inline SVG logo (avoids static file 404s)
+                        ui.HTML('''
+<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 400 120" class="logo" role="img" aria-label="NeuroChron logo">
+    <defs>
+        <linearGradient id="g1" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stop-color="#2bb0ff"/>
+            <stop offset="100%" stop-color="#4da6ff"/>
+        </linearGradient>
+    </defs>
+    <g transform="translate(10,10)">
+        <path d="M40 10 C55 5, 75 5, 90 16 C105 27, 110 45, 98 60 C90 72, 70 78, 56 74 C44 71, 30 62, 24 50 C18 38, 21 22, 34 14 C36 13,38 11,40 10 Z" fill="url(#g1)"/>
+        <path d="M96 34 C104 36, 110 44, 110 52 C110 64, 102 76, 92 82" fill="none" stroke="#bfe8ff" stroke-width="2" opacity="0.85"/>
+    </g>
+</svg>
+'''),
             ui.tags.div(
                 ui.h1("NeuroChron"),
                 ui.p("Brain MRI Analysis", class_="lead"),
