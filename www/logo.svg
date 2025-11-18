@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="120" viewBox="0 0 400 120" role="img" aria-label="NeuroChron logo">
+  <defs>
+    <linearGradient id="g1" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#2bb0ff"/>
+      <stop offset="100%" stop-color="#4da6ff"/>
+    </linearGradient>
+    <filter id="f1" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0b3550" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- stylized brain + head silhouette -->
+  <g transform="translate(10,10)" filter="url(#f1)">
+    <path d="M40 10 C55 5, 75 5, 90 16 C105 27, 110 45, 98 60 C90 72, 70 78, 56 74 C44 71, 30 62, 24 50 C18 38, 21 22, 34 14 C36 13,38 11,40 10 Z"
+          fill="url(#g1)"/>
+    <path d="M96 34 C104 36, 110 44, 110 52 C110 64, 102 76, 92 82" fill="none" stroke="#bfe8ff" stroke-width="2" opacity="0.85"/>
+  </g>
+
+  <!-- Text -->
+  <g transform="translate(120,46)">
+    <text x="0" y="0" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="700" fill="#e6f7ff">NeuroChron</text>
+    <text x="0" y="26" font-family="Inter, Arial, sans-serif" font-size="14" fill="#9fb6d3">Brain MRI Analysis</text>
+  </g>
+</svg>

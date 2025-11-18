@@ -168,7 +168,7 @@ input::placeholder, textarea::placeholder { color: rgba(230,247,255,0.35); }
     # Hero header — logo + title
     ui.tags.div(
         ui.tags.div(
-            ui.tags.img(src="www/logo.png", class_="logo", alt="NeuroChron logo", onerror="this.style.display='none'"),
+            ui.tags.img(src="www/logo.svg", class_="logo", alt="NeuroChron logo", onerror="this.style.display='none'"),
             ui.tags.div(
                 ui.h1("NeuroChron"),
                 ui.p("Brain MRI Analysis", class_="lead"),
