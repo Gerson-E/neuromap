@@ -1,0 +1,92 @@
+Log file for defect2seg
+Sun Nov 16 20:59:09 UTC 2025
+
+setenv SUBJECTS_DIR /subjects
+cd /subjects/001/scripts
+/usr/local/freesurfer/bin/defect2seg --s 001 --cortex
+
+freesurfer-linux-centos8_x86_64-7.4.1-20230613-7eb8460
+defect2seg 7.4.1
+Linux c42d11251d7b 6.6.87.2-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+pid 1283
+mri_label2label --label-cortex /subjects/001/surf/lh.orig.nofix /subjects/001/mri/aseg.presurf.mgz 0 /subjects/001/label/lh.nofix.cortex.label
+
+ Generating cortex label... RemoveHipAmgy=0
+ NucAccIsMedialWall=0
+ mris->useRealRAS=0
+21 non-cortical segments detected
+only using segment with 8362 vertices
+erasing segment 0 (vno[0] = 10916)
+erasing segment 1 (vno[0] = 12034)
+erasing segment 2 (vno[0] = 17722)
+erasing segment 3 (vno[0] = 18996)
+erasing segment 4 (vno[0] = 24771)
+erasing segment 5 (vno[0] = 36022)
+erasing segment 7 (vno[0] = 56127)
+erasing segment 8 (vno[0] = 89813)
+erasing segment 9 (vno[0] = 89884)
+erasing segment 10 (vno[0] = 90867)
+erasing segment 11 (vno[0] = 91861)
+erasing segment 12 (vno[0] = 91880)
+erasing segment 13 (vno[0] = 92932)
+erasing segment 14 (vno[0] = 93884)
+erasing segment 15 (vno[0] = 94899)
+erasing segment 16 (vno[0] = 95898)
+erasing segment 17 (vno[0] = 100515)
+erasing segment 18 (vno[0] = 101360)
+erasing segment 19 (vno[0] = 101375)
+erasing segment 20 (vno[0] = 101387)
+mri_label2vol --defects /subjects/001/surf/lh.orig.nofix /subjects/001/surf/lh.defect_labels /subjects/001/mri/orig.mgz 1000 0 /subjects/001/mri/surface.defects.mgz /subjects/001/label/lh.nofix.cortex.label
+mri_label2vol supposed to be reproducible but seed not set
+Contraining to label /subjects/001/label/lh.nofix.cortex.label
+Changing input type 0 to MRI_INT
+Converting defects to volume: offset=1000, merge=0
+Writing to /subjects/001/mri/surface.defects.mgz
+mris_defects_pointset -s /subjects/001/surf/lh.orig.nofix -d /subjects/001/surf/lh.defect_labels -o /subjects/001/surf/lh.defects.pointset --label /subjects/001/label/lh.nofix.cortex.label
+Reading in surface /subjects/001/surf/lh.orig.nofix
+Reading in defect segmentation /subjects/001/surf/lh.defect_labels
+Reading in label /subjects/001/label/lh.nofix.cortex.label
+#VMPC# mris_defects_pointset 187248
+mris_defects_pointset done
+mri_label2label --label-cortex /subjects/001/surf/rh.orig.nofix /subjects/001/mri/aseg.presurf.mgz 0 /subjects/001/label/rh.nofix.cortex.label
+
+ Generating cortex label... RemoveHipAmgy=0
+ NucAccIsMedialWall=0
+ mris->useRealRAS=0
+17 non-cortical segments detected
+only using segment with 8608 vertices
+erasing segment 0 (vno[0] = 32674)
+erasing segment 2 (vno[0] = 56493)
+erasing segment 3 (vno[0] = 64272)
+erasing segment 4 (vno[0] = 65328)
+erasing segment 5 (vno[0] = 66461)
+erasing segment 6 (vno[0] = 69020)
+erasing segment 7 (vno[0] = 72537)
+erasing segment 8 (vno[0] = 79938)
+erasing segment 9 (vno[0] = 83229)
+erasing segment 10 (vno[0] = 84079)
+erasing segment 11 (vno[0] = 84082)
+erasing segment 12 (vno[0] = 90632)
+erasing segment 13 (vno[0] = 94629)
+erasing segment 14 (vno[0] = 94692)
+erasing segment 15 (vno[0] = 96490)
+erasing segment 16 (vno[0] = 97417)
+mri_label2vol --defects /subjects/001/surf/rh.orig.nofix /subjects/001/surf/rh.defect_labels /subjects/001/mri/surface.defects.mgz 2000 1 /subjects/001/mri/surface.defects.mgz /subjects/001/label/rh.nofix.cortex.label
+mri_label2vol supposed to be reproducible but seed not set
+Contraining to label /subjects/001/label/rh.nofix.cortex.label
+Converting defects to volume: offset=2000, merge=1
+Writing to /subjects/001/mri/surface.defects.mgz
+mris_defects_pointset -s /subjects/001/surf/rh.orig.nofix -d /subjects/001/surf/rh.defect_labels -o /subjects/001/surf/rh.defects.pointset --label /subjects/001/label/rh.nofix.cortex.label
+Reading in surface /subjects/001/surf/rh.orig.nofix
+Reading in defect segmentation /subjects/001/surf/rh.defect_labels
+Reading in label /subjects/001/label/rh.nofix.cortex.label
+#VMPC# mris_defects_pointset 182280
+mris_defects_pointset done
+ 
+Started at Sun Nov 16 20:59:08 UTC 2025 
+Ended   at Sun Nov 16 20:59:34 UTC 2025
+Defect2seg-Run-Time-Sec 26
+Defect2seg-Run-Time-Min 0.52
+Defect2seg-Run-Time-Hours 0.01
+ 
+defect2seg Done

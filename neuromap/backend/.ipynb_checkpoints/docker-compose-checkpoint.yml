@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  frontend:
+    build: ./frontend
+    volumes:
+      - shared-data:/data
+    ports:
+      - "8000:8000"
+    depends_on:
+      - freesurfer
+      - brainage
+
+  freesurfer:
+    image: freesurfer/freesurfer:7.4.1
+    environment:
+      - SUBJECTS_DIR=/subjects
+      - FS_LICENSE=/license/license.txt
+    volumes:
+      - ./subjects:/subjects      # for recon output
+      - ./input:/input       # for the input NIfTI
+      - ./license:/license                # mount license folder into container
+    tty: true
+
+  brainage:
+    build: ./model
+    volumes:
+      - shared-data:/data
+    tty: true
+
+volumes:
+  shared-data:

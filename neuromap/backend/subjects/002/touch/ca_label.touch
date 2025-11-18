@@ -1,0 +1,1 @@
+mri_cc -aseg aseg.auto_noCCseg.mgz -o aseg.auto.mgz -lta /subjects/001/mri/transforms/cc_up.lta 001

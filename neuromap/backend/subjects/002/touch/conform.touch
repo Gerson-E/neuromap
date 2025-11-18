@@ -1,0 +1,1 @@
+mri_convert /subjects/001/mri/rawavg.mgz /subjects/001/mri/orig.mgz --conform

@@ -1,0 +1,81 @@
+status file for recon-all
+Sun Nov 16 18:44:04 UTC 2025
+#@# MotionCor Sun Nov 16 18:44:07 UTC 2025
+#@# Talairach Sun Nov 16 18:44:14 UTC 2025
+#@# Talairach Failure Detection Sun Nov 16 18:46:31 UTC 2025
+#@# Nu Intensity Correction Sun Nov 16 18:46:31 UTC 2025
+#@# Intensity Normalization Sun Nov 16 18:48:42 UTC 2025
+#@# Skull Stripping Sun Nov 16 18:49:52 UTC 2025
+#@# EM Registration Sun Nov 16 18:57:13 UTC 2025
+#@# CA Normalize Sun Nov 16 19:02:50 UTC 2025
+#@# CA Reg Sun Nov 16 19:03:25 UTC 2025
+#@# SubCort Seg Sun Nov 16 20:16:03 UTC 2025
+#@# CC Seg Sun Nov 16 20:47:17 UTC 2025
+#@# Merge ASeg Sun Nov 16 20:47:38 UTC 2025
+#@# Intensity Normalization2 Sun Nov 16 20:47:38 UTC 2025
+#@# Mask BFS Sun Nov 16 20:49:19 UTC 2025
+#@# WM Segmentation Sun Nov 16 20:49:21 UTC 2025
+#@# Fill Sun Nov 16 20:51:02 UTC 2025
+#@# Tessellate lh Sun Nov 16 20:51:53 UTC 2025
+#@# Tessellate rh Sun Nov 16 20:51:57 UTC 2025
+#@# Smooth1 lh Sun Nov 16 20:52:01 UTC 2025
+#@# Smooth1 rh Sun Nov 16 20:52:03 UTC 2025
+#@# Inflation1 lh Sun Nov 16 20:52:05 UTC 2025
+#@# Inflation1 rh Sun Nov 16 20:52:19 UTC 2025
+#@# QSphere lh Sun Nov 16 20:52:32 UTC 2025
+#@# QSphere rh Sun Nov 16 20:53:55 UTC 2025
+#@# Fix Topology lh Sun Nov 16 20:55:13 UTC 2025
+#@# Fix Topology rh Sun Nov 16 20:57:36 UTC 2025
+#@# Smooth2 lh Sun Nov 16 21:07:15 UTC 2025
+#@# Smooth2 rh Sun Nov 16 21:07:18 UTC 2025
+#@# Inflation2 lh Sun Nov 16 21:07:21 UTC 2025
+#@# Inflation2 rh Sun Nov 16 21:07:36 UTC 2025
+#@# Curv .H and .K lh Sun Nov 16 21:07:54 UTC 2025
+#@# Curv .H and .K rh Sun Nov 16 21:08:34 UTC 2025
+#@# Sphere lh Sun Nov 16 21:09:15 UTC 2025
+#@# Sphere rh Sun Nov 16 21:15:30 UTC 2025
+#@# Surf Reg lh Sun Nov 16 21:21:39 UTC 2025
+#@# Surf Reg rh Sun Nov 16 21:26:34 UTC 2025
+#@# Jacobian white lh Sun Nov 16 21:31:29 UTC 2025
+#@# Jacobian white rh Sun Nov 16 21:31:30 UTC 2025
+#@# AvgCurv lh Sun Nov 16 21:31:32 UTC 2025
+#@# AvgCurv rh Sun Nov 16 21:31:33 UTC 2025
+#@# Cortical Parc lh Sun Nov 16 21:31:34 UTC 2025
+#@# Cortical Parc rh Sun Nov 16 21:31:43 UTC 2025
+#@# white curv lh Sun Nov 16 21:43:59 UTC 2025
+#@# white area lh Sun Nov 16 21:44:01 UTC 2025
+#@# pial curv lh Sun Nov 16 21:44:02 UTC 2025
+#@# pial area lh Sun Nov 16 21:44:04 UTC 2025
+#@# thickness lh Sun Nov 16 21:44:05 UTC 2025
+#@# area and vertex vol lh Sun Nov 16 21:44:31 UTC 2025
+#@# white curv rh Sun Nov 16 21:44:33 UTC 2025
+#@# white area rh Sun Nov 16 21:44:35 UTC 2025
+#@# pial curv rh Sun Nov 16 21:44:36 UTC 2025
+#@# pial area rh Sun Nov 16 21:44:38 UTC 2025
+#@# thickness rh Sun Nov 16 21:44:39 UTC 2025
+#@# area and vertex vol rh Sun Nov 16 21:45:06 UTC 2025
+#@# Curvature Stats lh Sun Nov 16 21:45:09 UTC 2025
+#@# Curvature Stats rh Sun Nov 16 21:45:11 UTC 2025
+#@# Cortical ribbon mask Sun Nov 16 21:45:14 UTC 2025
+#@# Cortical Parc 2 lh Sun Nov 16 21:50:47 UTC 2025
+#@# Cortical Parc 2 rh Sun Nov 16 21:50:58 UTC 2025
+#@# Cortical Parc 3 lh Sun Nov 16 21:51:10 UTC 2025
+#@# Cortical Parc 3 rh Sun Nov 16 21:51:19 UTC 2025
+#@# WM/GM Contrast lh Sun Nov 16 21:51:27 UTC 2025
+#@# WM/GM Contrast rh Sun Nov 16 21:51:32 UTC 2025
+#@# Relabel Hypointensities Sun Nov 16 21:51:36 UTC 2025
+#@# APas-to-ASeg Sun Nov 16 21:51:48 UTC 2025
+#@# AParc-to-ASeg aparc Sun Nov 16 21:52:05 UTC 2025
+#@# AParc-to-ASeg aparc.a2009s Sun Nov 16 21:53:37 UTC 2025
+#@# AParc-to-ASeg aparc.DKTatlas Sun Nov 16 21:55:02 UTC 2025
+#@# WMParc Sun Nov 16 21:56:27 UTC 2025
+#@# Parcellation Stats lh Sun Nov 16 22:03:35 UTC 2025
+#@# Parcellation Stats rh Sun Nov 16 22:03:52 UTC 2025
+#@# Parcellation Stats 2 lh Sun Nov 16 22:04:10 UTC 2025
+#@# Parcellation Stats 2 rh Sun Nov 16 22:04:20 UTC 2025
+#@# Parcellation Stats 3 lh Sun Nov 16 22:04:29 UTC 2025
+#@# Parcellation Stats 3 rh Sun Nov 16 22:04:39 UTC 2025
+#@# ASeg Stats Sun Nov 16 22:04:47 UTC 2025
+#@# BA_exvivo Labels lh Sun Nov 16 22:08:29 UTC 2025
+#@# BA_exvivo Labels rh Sun Nov 16 22:11:17 UTC 2025
+recon-all -s 001 finished without error at Sun Nov 16 22:13:46 UTC 2025

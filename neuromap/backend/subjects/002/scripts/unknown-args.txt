@@ -1,0 +1,5 @@
+-i
+/input/001.nii
+-s
+001
+-all
