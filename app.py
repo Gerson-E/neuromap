@@ -1,5 +1,7 @@
 from shiny import App, ui, render, reactive, req
 import time
+import os
+import base64
 
 from neuromap.tasks.notify import send_email_task
 
@@ -168,10 +170,18 @@ input::placeholder, textarea::placeholder { color: rgba(230,247,255,0.35); }
     # Hero header — logo + title
     ui.tags.div(
         ui.tags.div(
-                                    # Prefer the provided PNG (www/logo.png). If it fails to load, hide the img and show the inline SVG fallback.
-                    ui.tags.div(
-                        # Serve static files from the top-level `www/` directory at `/logo.png`.
-                        ui.tags.img(src="/logo.png", class_="logo", alt="NeuroChron logo", onerror="this.style.display='none';document.getElementById('logo_svg').style.display='block'"),
+                                        # Prefer an inline-embedded PNG if available (avoids static-serving issues).
+                        ui.tags.div(
+                                                # Try to embed the PNG as a data URL; fall back to the direct path which may be served in some environments.
+                                                ui.tags.img(
+                                                    src=(lambda: (
+                                                        (lambda p: (open(p, 'rb').read()))(os.path.join(os.path.dirname(__file__), 'www', 'logo.png'))
+                                                        and ('data:image/png;base64,' + base64.b64encode(open(os.path.join(os.path.dirname(__file__), 'www', 'logo.png'), 'rb').read()).decode('ascii'))
+                                                    ) )(),
+                                                    class_="logo",
+                                                    alt="NeuroChron logo",
+                                                    onerror="this.style.display='none';document.getElementById('logo_svg').style.display='block'"
+                                                ),
                                             ui.HTML('''
             <svg id="logo_svg" xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 400 120" class="logo" role="img" aria-label="NeuroChron logo" style="display:none;">
                 <defs>
