@@ -180,10 +180,11 @@ input::placeholder, textarea::placeholder { color: rgba(230,247,255,0.35); }
                                                     ) )(),
                                                     class_="logo",
                                                     alt="NeuroChron logo",
+                                                    style="display:block;",
                                                     onerror="this.style.display='none';document.getElementById('logo_svg').style.display='block'"
                                                 ),
                                             ui.HTML('''
-            <svg id="logo_svg" xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 400 120" class="logo" role="img" aria-label="NeuroChron logo" style="display:none;">
+                                            <svg id="logo_svg" xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 400 120" class="logo" role="img" aria-label="NeuroChron logo" style="display:none;">
                 <defs>
                     <linearGradient id="g1" x1="0%" x2="100%" y1="0%" y2="100%">
                         <stop offset="0%" stop-color="#2bb0ff"/>
