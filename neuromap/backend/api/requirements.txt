@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic[email]
+requests
+python-multipart
+sqlalchemy
+pydicom
+nibabel
+numpy
+scipy
+tensorflow>=2.12.0
+python-dotenv

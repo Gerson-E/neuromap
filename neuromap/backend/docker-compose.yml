@@ -1,8 +1,8 @@
 version: "3.9"
 
 services:
-  frontend:
-    build: ./frontend
+  api:
+    build: ./api
     volumes:
       - shared-data:/data
     ports:
