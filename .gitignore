@@ -1,12 +1,38 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
+*.egg-info/
+dist/
+build/
+
+# Environment
 .env
-.venv.env
-.env
-.env
-.env
-.env
+.venv/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
 neuromap/backend/license/license.txt
+neuromap/backend/api/data/*.db
+neuromap/backend/api/data/*.db-journal
+neuromap/backend/api/uploads/
+neuromap/backend/input/*.nii
+neuromap/backend/input/*.dcm
+neuromap/backend/subjects/*/
+
+# Logs
+*.log
