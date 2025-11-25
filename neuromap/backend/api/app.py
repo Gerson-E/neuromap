@@ -65,8 +65,9 @@ def health_check():
     """Detailed health check with database connectivity."""
     try:
         # Test database connection
+        from sqlalchemy import text
         db = next(database.get_db())
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db.close()
 
         return {
@@ -346,6 +347,108 @@ def delete_job(job_id: str, db: Session = Depends(get_db)):
         "status": "deleted",
         "message": "Job and associated files deleted successfully"
     }
+
+
+@app.post("/api/test/predict")
+async def test_predict_with_existing_subject(
+    chronological_age: int = Form(...),
+    email: str = Form(...),
+    subject_id: str = Form(default="002"),
+    db: Session = Depends(get_db)
+):
+    """
+    TEST ENDPOINT: Skip FreeSurfer and use existing subject data.
+
+    This endpoint bypasses the 3.5 hour FreeSurfer processing by using
+    existing preprocessed data (subject 002 by default).
+
+    Perfect for testing without Docker!
+    """
+
+    # Validate age
+    if chronological_age < 22:
+        raise HTTPException(status_code=400, detail="Age must be > 21")
+
+    # Create test job with unique subject_id to avoid constraint errors
+    job_id = str(uuid.uuid4())
+    # Use unique test subject ID but still reference existing data for prediction
+    test_subject_id = f"test_{subject_id}_{job_id[:8]}"
+
+    job = database.create_job(
+        db=db,
+        job_id=job_id,
+        subject_id=test_subject_id,
+        file_path=f"/test/{subject_id}",
+        chronological_age=chronological_age,
+        email=email
+    )
+
+    # Immediately process (skip FreeSurfer, go straight to prediction)
+    try:
+        import brain_age_predictor
+
+        # Update to processing
+        database.update_job_status(db, job_id, "processing")
+
+        # Run brain age prediction (fast - a few seconds)
+        # Use the original subject_id (002) for prediction, not the unique test ID
+        predicted_age = brain_age_predictor.predict_brain_age(subject_id)
+
+        # Save results
+        result = database.create_result(
+            db=db,
+            job_id=job_id,
+            predicted_age=predicted_age,
+            chronological_age=chronological_age
+        )
+
+        # Update to completed
+        database.update_job_status(db, job_id, "completed")
+
+        # Send email in background
+        brain_age_gap = predicted_age - chronological_age
+
+        if brain_age_gap > 0:
+            interpretation = f"Your brain appears {abs(brain_age_gap):.1f} years older than your chronological age"
+        elif brain_age_gap < 0:
+            interpretation = f"Your brain appears {abs(brain_age_gap):.1f} years younger than your chronological age"
+        else:
+            interpretation = "Your brain age matches your chronological age"
+
+        context = {
+            "subject_id": f"{subject_id} (test)",
+            "status": "completed",
+            "predicted_age": f"{predicted_age:.2f}",
+            "chronological_age": str(chronological_age),
+            "brain_age_gap": f"{brain_age_gap:+.2f}",
+            "interpretation": interpretation,
+        }
+
+        try:
+            # Add path for neuromap imports
+            import sys
+            from pathlib import Path
+            NEUROMAP_ROOT = Path(__file__).parent.parent.parent.parent
+            sys.path.insert(0, str(NEUROMAP_ROOT))
+
+            from neuromap.tasks.notify import send_email_task
+            send_email_task(email, f"[NeuroChron] Brain Age Analysis Complete - {subject_id}", context)
+        except Exception as email_error:
+            print(f"Warning: Email notification failed: {email_error}")
+            # Don't fail the test if email fails
+
+        return {
+            "job_id": job_id,
+            "subject_id": f"{subject_id} (test)",
+            "status": "completed",
+            "predicted_age": predicted_age,
+            "brain_age_gap": brain_age_gap,
+            "message": "Test prediction completed successfully (using existing subject data)"
+        }
+
+    except Exception as e:
+        database.update_job_status(db, job_id, "failed", str(e))
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
 
 if __name__ == "__main__":

@@ -3,7 +3,13 @@ import time
 import os
 import base64
 
-from neuromap.tasks.notify import send_email_task
+from neuromap.api_client import (
+    check_api_health,
+    upload_and_process,
+    get_job_status,
+    get_job_results,
+    APIError
+)
 
 def _first_file(val):
     if val is None:
@@ -234,12 +240,18 @@ input::placeholder, textarea::placeholder { color: rgba(230,247,255,0.35); }
     ),
 )
 
-def run_long_process(file_path: str, age: int) -> str:
-    time.sleep(2)  # simulate work
-    return "success"
+def check_api_status():
+    """Check if API is available."""
+    try:
+        health = check_api_health()
+        return health.get('status') == 'healthy'
+    except:
+        return False
 
 def server(input, output, session):
-    status_val = reactive.Value("Idle")   # <- renamed
+    status_val = reactive.Value("Idle")
+    job_id_val = reactive.Value(None)
+    results_val = reactive.Value(None)
 
     @output
     @render.text
@@ -253,18 +265,33 @@ def server(input, output, session):
     @render.ui
     def upload_status():
         f = _first_file(input.mri_file())
+        results = results_val()
+
+        if results:
+            # Show results when available
+            result_data = results.get('result')
+            if result_data:
+                return ui.div(
+                    ui.tags.h4("✓ Analysis Complete!"),
+                    ui.tags.p(f"Predicted Brain Age: {result_data['predicted_age']:.2f} years"),
+                    ui.tags.p(f"Chronological Age: {result_data['chronological_age']} years"),
+                    ui.tags.p(f"Brain Age Gap: {result_data['brain_age_gap']:+.2f} years"),
+                    ui.tags.p(f"Interpretation: {result_data['interpretation']}", class_="muted"),
+                    ui.tags.p("Email notification sent!", class_="muted"),
+                )
+
         if f is not None:
             return ui.div(
                 ui.tags.h4("Upload successful!"),
                 ui.tags.p(f"Patient age: {input.age()}"),
-                ui.tags.p("File is ready for preprocessing"),
+                ui.tags.p("Processing will begin automatically..."),
             )
+
         return ui.div(
             ui.tags.h4("Waiting for file upload..."),
             ui.tags.p("Please upload a DICOM format MRI file"),
         )
 
-    # Keep output id 'process_status' but use a different Python function name
     @output(id="process_status")
     @render.text
     def _process_status_text():
@@ -273,7 +300,9 @@ def server(input, output, session):
     @reactive.Effect
     @reactive.event(input.mri_file)
     def _on_file_uploaded():
-        f = _first_file(input.mri_file()); req(f)
+        """Handle file upload and start processing via API."""
+        f = _first_file(input.mri_file())
+        req(f)
 
         to_email = (input.email() or "").strip()
         if not to_email:
@@ -283,21 +312,72 @@ def server(input, output, session):
         dicom_path = f["datapath"]
         age = int(input.age())
 
+        # Validate age
+        if age < 22:
+            status_val.set("Error: Age must be > 21 for brain age prediction")
+            return
+
         try:
-            status_val.set("Processing...")
-            status = run_long_process(dicom_path, age)
-            status_val.set(f"Processing complete: {status}")
+            # Check API availability
+            status_val.set("Checking API connection...")
+            if not check_api_status():
+                status_val.set("Error: API server not available. Please start the API server.")
+                return
 
-            subject = f"[NeuroChron] Brain MRI Analysis finished ({status})"
-            context = {
-                "job_name": "Brain MRI Analysis",
-                "status": status,
-                "extra": f"File: {f['name']} • Age: {age}",
-            }
-            # You can comment this next line to test UI without sending email
-            send_email_task(to_email, subject, context)
-            status_val.set(f"Email sent to {to_email}")
+            # Upload and start processing
+            status_val.set("Uploading file to API...")
+            response = upload_and_process(dicom_path, age, to_email)
 
+            job_id = response['job_id']
+            job_id_val.set(job_id)
+
+            status_val.set(f"Processing started (Job ID: {job_id[:8]}...)")
+
+            # Start polling for status
+            _poll_job_status()
+
+        except APIError as e:
+            status_val.set(f"API Error: {str(e)}")
+        except Exception as e:
+            status_val.set(f"Error: {type(e).__name__}: {e}")
+
+    @reactive.Effect
+    def _poll_job_status():
+        """Poll job status every 10 seconds."""
+        job_id = job_id_val()
+        if not job_id:
+            return
+
+        try:
+            # Get current status
+            status_response = get_job_status(job_id)
+            current_status = status_response['status']
+            progress_msg = status_response.get('progress_message', '')
+
+            # Update status display
+            status_val.set(f"{current_status.title()}: {progress_msg}")
+
+            # Check if completed
+            if current_status == 'completed':
+                # Get results
+                results = get_job_results(job_id)
+                results_val.set(results)
+                status_val.set("Analysis complete! Results ready.")
+                return
+
+            # Check if failed
+            if current_status == 'failed':
+                error_msg = status_response.get('error_message', 'Unknown error')
+                status_val.set(f"Failed: {error_msg}")
+                return
+
+            # Continue polling if still processing
+            if current_status in ['pending', 'processing']:
+                # Schedule next poll in 10 seconds
+                reactive.invalidate_later(10)
+
+        except APIError as e:
+            status_val.set(f"Error checking status: {str(e)}")
         except Exception as e:
             status_val.set(f"Error: {type(e).__name__}: {e}")
 

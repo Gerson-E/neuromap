@@ -1,5 +1,31 @@
-Your process has completed.
+NeuroChron: Brain Age Analysis Complete
+========================================
 
-Job: {{ job_name }}
-Status: {{ status }}
-{{ extra or "" }}
+Subject ID: {{ subject_id }}
+
+{% if status == 'completed' and predicted_age %}
+BRAIN AGE ANALYSIS RESULTS
+--------------------------
+
+Predicted Brain Age:  {{ predicted_age }} years
+Chronological Age:    {{ chronological_age }} years
+Brain Age Gap:        {{ brain_age_gap }} years
+
+Interpretation: {{ interpretation }}
+
+Note: Brain age prediction is valid for individuals older than 21 years.
+Results are based on T1-weighted MRI scans processed through FreeSurfer and
+analyzed using a 3D convolutional neural network trained on healthy brain data.
+
+{% elif status == 'failed' %}
+ANALYSIS FAILED
+---------------
+
+Error: {{ error }}
+
+Please contact support if you need assistance.
+{% endif %}
+
+---
+This analysis was performed using NeuroChron Brain Age Prediction System.
+For questions or support, please contact your system administrator.

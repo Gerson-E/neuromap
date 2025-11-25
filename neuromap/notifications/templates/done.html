@@ -1,9 +1,64 @@
 <!doctype html>
 <html>
+  <head>
+    <style>
+      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+      .header { background: linear-gradient(135deg, #0b3550 0%, #0e4a73 100%); color: white; padding: 20px; border-radius: 8px; }
+      .content { padding: 20px; }
+      .results { background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 15px 0; }
+      .result-row { margin: 10px 0; }
+      .label { font-weight: bold; color: #0b3550; }
+      .value { color: #2bb0ff; font-size: 1.1em; }
+      .interpretation { background: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; margin: 15px 0; }
+      .footer { color: #666; font-size: 0.9em; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; }
+    </style>
+  </head>
   <body>
-    <h2>✅ Process Complete</h2>
-    <p><b>Job:</b> {{ job_name }}</p>
-    <p><b>Status:</b> {{ status }}</p>
-    {% if extra %}<p>{{ extra }}</p>{% endif %}
+    <div class="header">
+      <h2>✅ NeuroChron: Brain Age Analysis Complete</h2>
+    </div>
+
+    <div class="content">
+      <p><b>Subject ID:</b> {{ subject_id }}</p>
+
+      {% if status == 'completed' and predicted_age %}
+      <div class="results">
+        <h3>Brain Age Analysis Results</h3>
+
+        <div class="result-row">
+          <span class="label">Predicted Brain Age:</span>
+          <span class="value">{{ predicted_age }} years</span>
+        </div>
+
+        <div class="result-row">
+          <span class="label">Chronological Age:</span>
+          <span class="value">{{ chronological_age }} years</span>
+        </div>
+
+        <div class="result-row">
+          <span class="label">Brain Age Gap:</span>
+          <span class="value">{{ brain_age_gap }} years</span>
+        </div>
+      </div>
+
+      <div class="interpretation">
+        <strong>Interpretation:</strong> {{ interpretation }}
+      </div>
+
+      <p><em>Note: Brain age prediction is valid for individuals older than 21 years. Results are based on T1-weighted MRI scans processed through FreeSurfer and analyzed using a 3D convolutional neural network trained on healthy brain data.</em></p>
+
+      {% elif status == 'failed' %}
+      <div class="results" style="background: #ffe6e6;">
+        <h3>❌ Analysis Failed</h3>
+        <p><b>Error:</b> {{ error }}</p>
+        <p>Please contact support if you need assistance.</p>
+      </div>
+      {% endif %}
+
+      <div class="footer">
+        <p>This analysis was performed using NeuroChron Brain Age Prediction System.</p>
+        <p>For questions or support, please contact your system administrator.</p>
+      </div>
+    </div>
   </body>
 </html>
