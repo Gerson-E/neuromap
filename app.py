@@ -54,7 +54,7 @@ body {
 .hero {
     width: 100%;
     max-width: 980px;
-    margin: 32px;
+    margin: 64px 32px 32px 32px;
     text-align: center;
 }
 .hero-inner {
@@ -168,7 +168,7 @@ input::placeholder, textarea::placeholder { color: rgba(230,247,255,0.35); }
 /* Responsive adjustments */
 @media (max-width: 920px){
     .grid { grid-template-columns: 1fr; }
-    .hero { margin: 18px; }
+    .hero { margin: 48px 18px 18px 18px; }
 }
             """
         )
@@ -221,6 +221,11 @@ input::placeholder, textarea::placeholder { color: rgba(230,247,255,0.35); }
                 ui.input_text("email", "Notification Email", value=""),
                 ui.input_file("mri_file", "Upload MRI (DICOM format)", accept=[".dcm"]),
                 ui.hr(),
+                ui.tags.div(
+                    ui.input_action_button("quick_test", "Quick Test (Use Existing Data)", class_="button"),
+                    ui.tags.p("Test with preprocessed subject 002 (no upload needed)", class_="muted", style="font-size:12px; margin-top:8px;"),
+                ),
+                ui.hr(),
                 ui.output_text("upload_info"),
                 class_="panel",
             ),
@@ -252,6 +257,7 @@ def server(input, output, session):
     status_val = reactive.Value("Idle")
     job_id_val = reactive.Value(None)
     results_val = reactive.Value(None)
+    test_mode = reactive.Value(False)
 
     @output
     @render.text
@@ -296,6 +302,67 @@ def server(input, output, session):
     @render.text
     def _process_status_text():
         return f"Status: {status_val()}"
+
+    @reactive.Effect
+    @reactive.event(input.quick_test)
+    def _on_quick_test():
+        """Handle quick test button click."""
+
+        to_email = (input.email() or "").strip()
+        if not to_email:
+            status_val.set("Please enter an email address for notifications")
+            return
+
+        age = int(input.age())
+
+        # Validate age
+        if age < 22:
+            status_val.set("Error: Age must be > 21 for brain age prediction")
+            return
+
+        try:
+            # Check API availability
+            status_val.set("Checking API connection...")
+            if not check_api_status():
+                status_val.set("Error: API server not available. Please start the API server.")
+                return
+
+            # Call test endpoint
+            status_val.set("Running quick test with existing data...")
+            test_mode.set(True)
+
+            import requests
+            response = requests.post(
+                "http://localhost:8000/api/test/predict",
+                data={
+                    "chronological_age": age,
+                    "email": to_email,
+                    "subject_id": "002"
+                },
+                timeout=30
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+
+                # Set job ID for status display
+                job_id_val.set(result['job_id'])
+
+                # Format results for display
+                result_data = {
+                    'predicted_age': result['predicted_age'],
+                    'chronological_age': age,
+                    'brain_age_gap': result['brain_age_gap'],
+                    'interpretation': f"Brain appears {abs(result['brain_age_gap']):.1f} years {'older' if result['brain_age_gap'] > 0 else 'younger'} than chronological age"
+                }
+
+                results_val.set({'result': result_data})
+                status_val.set(f"Quick test complete! (Job ID: {result['job_id'][:8]}...)")
+            else:
+                status_val.set(f"Test failed: {response.text}")
+
+        except Exception as e:
+            status_val.set(f"Error: {type(e).__name__}: {e}")
 
     @reactive.Effect
     @reactive.event(input.mri_file)
