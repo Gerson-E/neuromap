@@ -63,7 +63,7 @@ def process_pipeline(job_id: str):
 
         # Stage 2: Run FreeSurfer
         print(f"{'='*70}")
-        print(f"STAGE 1/3: FreeSurfer Preprocessing")
+        print(f"STAGE 1/4: FreeSurfer Preprocessing")
         print(f"{'='*70}\n")
 
         try:
@@ -80,7 +80,7 @@ def process_pipeline(job_id: str):
 
         # Stage 3: Run Brain Age Prediction
         print(f"{'='*70}")
-        print(f"STAGE 2/3: Brain Age Prediction")
+        print(f"STAGE 2/4: Brain Age Prediction")
         print(f"{'='*70}\n")
 
         try:
@@ -98,9 +98,28 @@ def process_pipeline(job_id: str):
         except brain_age_predictor.BrainAgePredictionError as e:
             raise Exception(f"Brain age prediction failed: {str(e)}")
 
+        # Stage 3: Generate Saliency Map
+        print(f"{'='*70}")
+        print(f"STAGE 3/4: Generating Saliency Map")
+        print(f"{'='*70}\n")
+
+        saliency_map_path = None
+        try:
+            saliency_map_path = brain_age_predictor.generate_saliency_map_for_subject(
+                subject_id=job.subject_id
+            )
+
+            print(f"\n✓ Saliency map generated:")
+            print(f"  Path: {saliency_map_path}\n")
+
+        except Exception as e:
+            # Saliency map failure shouldn't fail the entire job
+            print(f"⚠ Warning: Failed to generate saliency map: {str(e)}")
+            print(f"  Continuing with results without saliency map\n")
+
         # Stage 4: Save Results
         print(f"{'='*70}")
-        print(f"STAGE 3/3: Saving Results & Sending Notification")
+        print(f"STAGE 4/4: Saving Results & Sending Notification")
         print(f"{'='*70}\n")
 
         # Save to database
@@ -108,7 +127,8 @@ def process_pipeline(job_id: str):
             db=db,
             job_id=job_id,
             predicted_age=predicted_age,
-            chronological_age=job.chronological_age
+            chronological_age=job.chronological_age,
+            saliency_map_path=str(saliency_map_path) if saliency_map_path else None
         )
 
         print(f"✓ Results saved to database")

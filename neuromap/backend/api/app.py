@@ -5,11 +5,17 @@ Provides REST API endpoints for MRI upload, processing, and result retrieval.
 
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import Optional
 import uuid
 from pathlib import Path
 import sys
+import numpy as np
+import io
+import matplotlib
+matplotlib.use('Agg')  # Non-interactive backend
+import matplotlib.pyplot as plt
 
 # Add current directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
@@ -273,12 +279,18 @@ def get_job_results(job_id: str, db: Session = Depends(get_db)):
             detail="Job marked as completed but results not found in database"
         )
 
+    # Check if saliency map is available
+    saliency_map_available = result.saliency_map_path is not None
+    saliency_map_url = f"/api/jobs/{job_id}/saliency" if saliency_map_available else None
+
     # Format result data
     result_data = models.ResultData(
         predicted_age=result.predicted_age,
         chronological_age=job.chronological_age,
         brain_age_gap=result.brain_age_gap,
-        interpretation=models.format_interpretation(result.brain_age_gap)
+        interpretation=models.format_interpretation(result.brain_age_gap),
+        saliency_map_available=saliency_map_available,
+        saliency_map_url=saliency_map_url
     )
 
     return models.JobResultResponse(
@@ -288,6 +300,110 @@ def get_job_results(job_id: str, db: Session = Depends(get_db)):
         error_message=None,
         completed_at=job.completed_at
     )
+
+
+@app.get("/api/jobs/{job_id}/saliency")
+def get_saliency_map(job_id: str, db: Session = Depends(get_db)):
+    """
+    Get saliency map visualization for a completed job.
+
+    Returns a PNG image showing three orthogonal slices (axial, coronal, sagittal)
+    of the 3D saliency map, highlighting which brain regions contributed most
+    to the age prediction.
+    """
+
+    job = database.get_job_by_id(db, job_id)
+
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+
+    if job.status != "completed":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Saliency map not yet available. Job status: {job.status}"
+        )
+
+    # Get result to find saliency map path
+    result = database.get_result_by_job_id(db, job_id)
+
+    if not result or not result.saliency_map_path:
+        raise HTTPException(
+            status_code=404,
+            detail="Saliency map not available for this job"
+        )
+
+    saliency_map_path = Path(result.saliency_map_path)
+
+    if not saliency_map_path.exists():
+        raise HTTPException(
+            status_code=500,
+            detail=f"Saliency map file not found at {saliency_map_path}"
+        )
+
+    try:
+        # Load saliency map (.npy file contains 3D volume)
+        saliency_map = np.load(saliency_map_path)
+
+        # Get middle slices for each view
+        x, y, z = saliency_map.shape
+        mid_x, mid_y, mid_z = x // 2, y // 2, z // 2
+
+        # Create visualization with three views
+        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+        # Axial view (looking down from top)
+        axes[0].imshow(saliency_map[:, :, mid_z].T, cmap='hot', origin='lower')
+        axes[0].set_title('Axial View (Top-Down)', fontsize=12, fontweight='bold')
+        axes[0].axis('off')
+
+        # Coronal view (looking from front)
+        axes[1].imshow(saliency_map[:, mid_y, :].T, cmap='hot', origin='lower')
+        axes[1].set_title('Coronal View (Front)', fontsize=12, fontweight='bold')
+        axes[1].axis('off')
+
+        # Sagittal view (looking from side)
+        axes[2].imshow(saliency_map[mid_x, :, :].T, cmap='hot', origin='lower')
+        axes[2].set_title('Sagittal View (Side)', fontsize=12, fontweight='bold')
+        axes[2].axis('off')
+
+        # Add overall title
+        fig.suptitle(
+            f'Brain Age Saliency Map - {job.subject_id}',
+            fontsize=14,
+            fontweight='bold',
+            y=0.98
+        )
+
+        # Add colorbar
+        fig.colorbar(
+            axes[0].images[0],
+            ax=axes,
+            orientation='horizontal',
+            fraction=0.046,
+            pad=0.04,
+            label='Importance for Age Prediction'
+        )
+
+        plt.tight_layout()
+
+        # Save to bytes buffer
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', dpi=150, bbox_inches='tight', facecolor='white')
+        plt.close(fig)
+        buf.seek(0)
+
+        # Return as image response
+        return StreamingResponse(
+            buf,
+            media_type="image/png",
+            headers={"Content-Disposition": f"inline; filename=saliency_map_{job.subject_id}.png"}
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate saliency map visualization: {str(e)}"
+        )
 
 
 @app.get("/api/jobs", response_model=list[models.JobStatusResponse])
@@ -394,12 +510,21 @@ async def test_predict_with_existing_subject(
         # Use the original subject_id (002) for prediction, not the unique test ID
         predicted_age = brain_age_predictor.predict_brain_age(subject_id)
 
+        # Generate saliency map
+        saliency_map_path = None
+        try:
+            saliency_map_path = brain_age_predictor.generate_saliency_map_for_subject(subject_id)
+            print(f"✓ Saliency map generated for test: {saliency_map_path}")
+        except Exception as e:
+            print(f"⚠ Warning: Could not generate saliency map for test: {e}")
+
         # Save results
         result = database.create_result(
             db=db,
             job_id=job_id,
             predicted_age=predicted_age,
-            chronological_age=chronological_age
+            chronological_age=chronological_age,
+            saliency_map_path=str(saliency_map_path) if saliency_map_path else None
         )
 
         # Update to completed
@@ -437,12 +562,18 @@ async def test_predict_with_existing_subject(
             print(f"Warning: Email notification failed: {email_error}")
             # Don't fail the test if email fails
 
+        # Check if saliency map was generated
+        saliency_map_available = saliency_map_path is not None
+        saliency_map_url = f"/api/jobs/{job_id}/saliency" if saliency_map_available else None
+
         return {
             "job_id": job_id,
             "subject_id": f"{subject_id} (test)",
             "status": "completed",
             "predicted_age": predicted_age,
             "brain_age_gap": brain_age_gap,
+            "saliency_map_available": saliency_map_available,
+            "saliency_map_url": saliency_map_url,
             "message": "Test prediction completed successfully (using existing subject data)"
         }
 

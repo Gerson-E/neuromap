@@ -41,20 +41,21 @@ html, body {
 body {
     font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
-    padding: 0;
+    padding: 20px 0;
     color: var(--muted);
     background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%);
     -webkit-font-smoothing:antialiased;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    min-height: 100vh;
 }
 
 /* Hero header */
 .hero {
     width: 100%;
     max-width: 980px;
-    margin: 64px 32px 32px 32px;
+    margin: 40px 32px 32px 32px;
     text-align: center;
 }
 .hero-inner {
@@ -168,7 +169,7 @@ input::placeholder, textarea::placeholder { color: rgba(230,247,255,0.35); }
 /* Responsive adjustments */
 @media (max-width: 920px){
     .grid { grid-template-columns: 1fr; }
-    .hero { margin: 48px 18px 18px 18px; }
+    .hero { margin: 30px 18px 18px 18px; }
 }
             """
         )
@@ -277,14 +278,33 @@ def server(input, output, session):
             # Show results when available
             result_data = results.get('result')
             if result_data:
-                return ui.div(
+                # Build results UI
+                result_elements = [
                     ui.tags.h4("✓ Analysis Complete!"),
                     ui.tags.p(f"Predicted Brain Age: {result_data['predicted_age']:.2f} years"),
                     ui.tags.p(f"Chronological Age: {result_data['chronological_age']} years"),
                     ui.tags.p(f"Brain Age Gap: {result_data['brain_age_gap']:+.2f} years"),
                     ui.tags.p(f"Interpretation: {result_data['interpretation']}", class_="muted"),
                     ui.tags.p("Email notification sent!", class_="muted"),
-                )
+                ]
+
+                # Add saliency map if available
+                if result_data.get('saliency_map_available'):
+                    saliency_url = f"http://localhost:8000{result_data['saliency_map_url']}"
+                    result_elements.extend([
+                        ui.tags.hr(),
+                        ui.tags.h4("Brain Age Saliency Map", style="margin-top: 20px;"),
+                        ui.tags.p("Regions highlighted in red contributed most to the age prediction:", class_="muted", style="font-size: 13px; margin-bottom: 15px;"),
+                        ui.tags.img(
+                            src=saliency_url,
+                            style="width: 100%; max-width: 1200px; border-radius: 8px; margin-top: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer;",
+                            alt="Brain age saliency map visualization",
+                            onclick="window.open(this.src, '_blank')"
+                        ),
+                        ui.tags.p("Click image to view full size", class_="muted", style="font-size: 11px; margin-top: 8px; text-align: center;")
+                    ])
+
+                return ui.div(*result_elements)
 
         if f is not None:
             return ui.div(
@@ -353,7 +373,9 @@ def server(input, output, session):
                     'predicted_age': result['predicted_age'],
                     'chronological_age': age,
                     'brain_age_gap': result['brain_age_gap'],
-                    'interpretation': f"Brain appears {abs(result['brain_age_gap']):.1f} years {'older' if result['brain_age_gap'] > 0 else 'younger'} than chronological age"
+                    'interpretation': f"Brain appears {abs(result['brain_age_gap']):.1f} years {'older' if result['brain_age_gap'] > 0 else 'younger'} than chronological age",
+                    'saliency_map_available': result.get('saliency_map_available', False),
+                    'saliency_map_url': result.get('saliency_map_url')
                 }
 
                 results_val.set({'result': result_data})

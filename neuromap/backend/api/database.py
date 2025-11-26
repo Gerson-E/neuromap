@@ -63,6 +63,7 @@ class Result(Base):
     # Prediction outputs
     predicted_age = Column(Float, nullable=False)
     brain_age_gap = Column(Float, nullable=False)  # predicted - chronological
+    saliency_map_path = Column(String, nullable=True)  # Path to saliency map .npy file
 
     # Timestamp
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
@@ -157,7 +158,7 @@ def update_job_nifti_path(db, job_id: str, nifti_path: str):
     return job
 
 
-def create_result(db, job_id: str, predicted_age: float, chronological_age: int) -> Result:
+def create_result(db, job_id: str, predicted_age: float, chronological_age: int, saliency_map_path: str = None) -> Result:
     """
     Create a result record for a completed job.
     Automatically calculates brain age gap.
@@ -167,6 +168,7 @@ def create_result(db, job_id: str, predicted_age: float, chronological_age: int)
         job_id=job_id,
         predicted_age=predicted_age,
         brain_age_gap=brain_age_gap,
+        saliency_map_path=saliency_map_path,
         created_at=datetime.now(timezone.utc)
     )
     db.add(result)
@@ -180,6 +182,18 @@ def get_result_by_job_id(db, job_id: str) -> Result:
     Retrieve prediction results for a job.
     """
     return db.query(Result).filter(Result.job_id == job_id).first()
+
+
+def update_result_saliency_map(db, job_id: str, saliency_map_path: str):
+    """
+    Update the saliency map path for a result.
+    """
+    result = db.query(Result).filter(Result.job_id == job_id).first()
+    if result:
+        result.saliency_map_path = saliency_map_path
+        db.commit()
+        db.refresh(result)
+    return result
 
 
 def get_all_jobs(db, limit: int = 100):

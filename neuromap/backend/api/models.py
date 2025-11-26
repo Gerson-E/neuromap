@@ -91,6 +91,8 @@ class ResultData(BaseModel):
     chronological_age: int = Field(..., description="Patient's chronological age")
     brain_age_gap: float = Field(..., description="Brain age gap (predicted - chronological)")
     interpretation: str = Field(..., description="Human-readable interpretation of results")
+    saliency_map_available: bool = Field(default=False, description="Whether a saliency map is available")
+    saliency_map_url: Optional[str] = Field(default=None, description="URL to retrieve saliency map visualization")
 
     class Config:
         json_schema_extra = {
@@ -98,7 +100,9 @@ class ResultData(BaseModel):
                 "predicted_age": 52.3,
                 "chronological_age": 45,
                 "brain_age_gap": 7.3,
-                "interpretation": "Brain appears 7.3 years older than chronological age"
+                "interpretation": "Brain appears 7.3 years older than chronological age",
+                "saliency_map_available": True,
+                "saliency_map_url": "/api/jobs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/saliency"
             }
         }
 
@@ -121,7 +125,9 @@ class JobResultResponse(BaseModel):
                     "predicted_age": 52.3,
                     "chronological_age": 45,
                     "brain_age_gap": 7.3,
-                    "interpretation": "Brain appears 7.3 years older than chronological age"
+                    "interpretation": "Brain appears 7.3 years older than chronological age",
+                    "saliency_map_available": True,
+                    "saliency_map_url": "/api/jobs/a1b2c3d4-e5f6-7890-abcd-ef1234567890/saliency"
                 },
                 "error_message": None,
                 "completed_at": "2025-01-25T18:05:42.789012Z"

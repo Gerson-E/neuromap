@@ -14,7 +14,7 @@ MODEL_DIR = Path(__file__).parent.parent / "model"
 sys.path.insert(0, str(MODEL_DIR))
 
 # Import model utilities
-from utils import dataLoader
+from utils import dataLoader, saliency
 from model import NativeSpacemodel
 
 
@@ -129,6 +129,67 @@ class BrainAgePredictor:
         except Exception as e:
             raise RuntimeError(f"Brain age prediction failed: {str(e)}")
 
+    def generate_saliency_map(self, brain_mgz_path: Path, output_dir: Path = None) -> Path:
+        """
+        Generate a saliency map showing which brain regions contribute to age prediction.
+
+        Args:
+            brain_mgz_path: Path to brain.mgz file
+            output_dir: Directory to save saliency map (defaults to same dir as brain.mgz)
+
+        Returns:
+            Path: Path to saved saliency map (.npy file)
+
+        Raises:
+            FileNotFoundError: If brain.mgz not found
+            RuntimeError: If saliency map generation fails
+        """
+
+        if not brain_mgz_path.exists():
+            raise FileNotFoundError(f"Brain file not found: {brain_mgz_path}")
+
+        print(f"\nGenerating saliency map for: {brain_mgz_path.name}")
+
+        try:
+            # Load brain volume
+            print("Loading brain volume...")
+            brains = dataLoader.dataLoader([str(brain_mgz_path)])
+
+            # Validate shape
+            n, h, w, d = brains.shape
+            print(f"Loaded {n} brain(s) with shape: {h}x{w}x{d}")
+
+            if h != 128 or w != 128 or d != 128:
+                raise ValueError(f"Expected brain volume of size 128³, got {h}x{w}x{d}")
+
+            # Generate saliency map
+            print("Computing gradient-based saliency map...")
+            saliency_maps = saliency.saliencyMap(self._model, brains, normalize=True)
+
+            # Post-process saliency map (mask to brain region only)
+            print("Post-processing saliency map...")
+            saliency_maps_processed = saliency.postProcess(saliency_maps, brains)
+
+            # Determine output path
+            if output_dir is None:
+                output_dir = brain_mgz_path.parent.parent / "saliency"
+
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            subject_id = brain_mgz_path.parent.parent.name
+            output_path = output_dir / f"{subject_id}_saliency.npy"
+
+            # Save saliency map
+            print(f"Saving saliency map to: {output_path}")
+            np.save(output_path, saliency_maps_processed[0])
+
+            print(f"✓ Saliency map generated successfully!")
+
+            return output_path
+
+        except Exception as e:
+            raise RuntimeError(f"Saliency map generation failed: {str(e)}")
+
 
 class BrainAgePredictionError(Exception):
     """Custom exception for brain age prediction errors."""
@@ -174,6 +235,47 @@ def predict_brain_age(subject_id: str, subjects_dir: Optional[Path] = None) -> f
 
     except Exception as e:
         raise BrainAgePredictionError(f"Failed to predict brain age: {str(e)}")
+
+
+def generate_saliency_map_for_subject(subject_id: str, subjects_dir: Optional[Path] = None) -> Path:
+    """
+    Generate a saliency map for a subject.
+
+    Args:
+        subject_id: FreeSurfer subject identifier
+        subjects_dir: Optional path to subjects directory (defaults to backend/subjects)
+
+    Returns:
+        Path: Path to saved saliency map (.npy file)
+
+    Raises:
+        BrainAgePredictionError: If saliency map generation fails
+    """
+
+    # Determine subjects directory
+    if subjects_dir is None:
+        subjects_dir = Path(__file__).parent.parent / "subjects"
+
+    # Locate brain.mgz
+    brain_mgz = subjects_dir / subject_id / "mri" / "brain.mgz"
+
+    if not brain_mgz.exists():
+        raise BrainAgePredictionError(
+            f"brain.mgz not found for subject {subject_id} at {brain_mgz}. "
+            "Please run FreeSurfer preprocessing first."
+        )
+
+    try:
+        # Get or create predictor instance
+        predictor = BrainAgePredictor()
+
+        # Generate saliency map
+        saliency_map_path = predictor.generate_saliency_map(brain_mgz)
+
+        return saliency_map_path
+
+    except Exception as e:
+        raise BrainAgePredictionError(f"Failed to generate saliency map: {str(e)}")
 
 
 def batch_predict(subject_ids: list[str], subjects_dir: Optional[Path] = None) -> dict[str, float]:
