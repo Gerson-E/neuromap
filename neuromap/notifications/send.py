@@ -4,7 +4,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Email, To, Content
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from ..config import SENDGRID_API_KEY, MAIL_FROM, MAIL_REPLY_TO, validate_email_config
+from ..config import SENDGRID_API_KEY, MAIL_FROM, MAIL_REPLY_TO, validate_email_config, is_email_configured
 
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "templates")
@@ -28,6 +28,13 @@ class TransientEmailError(Exception):
 
 def send_email(to_email: str, subject: str, context: Mapping[str, str],
                txt_template: str = "done.txt", html_template: str = "done.html") -> None:
+    # Check if email is configured before attempting to send
+    if not is_email_configured():
+        print("⚠ Email not configured - skipping notification")
+        print(f"  Would have sent to: {to_email}")
+        print(f"  Subject: {subject}")
+        return
+
     validate_email_config()
 
     html = _render(html_template, context)
